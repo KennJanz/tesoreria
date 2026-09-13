@@ -24,13 +24,11 @@ app.add_middleware(
 DATABASE_URL = os.getenv("DATABASE_URL")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Inicializa el cliente oficial de Gemini (detecta GEMINI_API_KEY del entorno automáticamente si no se le pasa explícitamente)
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
 
 def get_db_connection():
     if not DATABASE_URL:
         raise HTTPException(status_code=500, detail="DATABASE_URL no configurada")
-    # Decodifica automáticamente caracteres especiales como %40 si existieran
     decoded_url = urllib.parse.unquote(DATABASE_URL)
     return psycopg2.connect(decoded_url)
 
@@ -84,17 +82,15 @@ async def escanear_sinpe(file: UploadFile = File(...)):
         NO agregues etiquetas markdown ni texto explicativo. Responde exclusivamente con el JSON.
         """
         
-        # En el nuevo SDK, las imágenes en bytes se pasan envolviéndolas en types.Part.from_bytes
         image_part = types.Part.from_bytes(
             data=contents,
             mime_type=file.content_type or "image/jpeg"
         )
         
-        # Uso del nuevo cliente y modelo recomendado gemini-2.5-flash
-       response = client.models.generate_content(
-       model='gemini-1.5-flash',
-       contents=[image_part, prompt]
-       )
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=[image_part, prompt]
+        )
         
         raw_text = re.sub(r'```json\s*|\s*```', '', response.text).strip()
         datos = json.loads(raw_text)

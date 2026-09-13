@@ -91,10 +91,10 @@ async def escanear_sinpe(file: UploadFile = File(...)):
         )
         
         # Uso del nuevo cliente y modelo recomendado gemini-2.5-flash
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[image_part, prompt]
-        )
+       response = client.models.generate_content(
+       model='gemini-1.5-flash',
+       contents=[image_part, prompt]
+       )
         
         raw_text = re.sub(r'```json\s*|\s*```', '', response.text).strip()
         datos = json.loads(raw_text)

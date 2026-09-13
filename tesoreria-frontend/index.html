@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Tesorería</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h2 class="mb-4 text-center">Dashboard de Tesorería</h2>
+
+    <!-- Tarjeta de Saldo Total -->
+    <div class="row mb-4 justify-content-center">
+      <div class="col-md-6">
+        <div class="card text-white bg-primary text-center shadow-sm">
+          <div class="card-body py-3">
+            <h5 class="card-title m-0">Balance General</h5>
+            <h2 id="lblBalance" class="fw-bold mt-2">₡0.00</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Registro / Escáner SINPE -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-white"><strong>Registrar Movimiento</strong></div>
+      <div class="card-body">
+
+        <!-- Escáner de Capturas con IA Gemini -->
+        <div class="mb-4 p-3 border rounded bg-light">
+          <label class="form-label fw-bold">⚡ Escanear Captura de SINPE Móvil con IA:</label>
+          <input type="file" id="inputSinpeImg" class="form-control" accept="image/*">
+          <div class="mt-2 d-flex align-items-center gap-2">
+            <button class="btn btn-outline-primary" onclick="procesarImagenSINPE()">Analizar Imagen</button>
+            <span id="spnCargando" class="spinner-border spinner-border-sm text-primary d-none" role="status"></span>
+            <span id="spnTextoCargando" class="text-muted d-none">Analizando comprobante con Gemini...</span>
+          </div>
+        </div>
+
+        <!-- Formulario Manual / Confirmación -->
+        <form id="formRegistro" onsubmit="guardarRegistro(event)">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Tipo</label>
+              <select id="selTipo" class="form-select" required>
+                <option value="INGRESO">INGRESO (+)</option>
+                <option value="EGRESO">EGRESO (-)</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Medio de Pago</label>
+              <select id="selMedio" class="form-select" required>
+                <option value="SINPE">SINPE Móvil</option>
+                <option value="EFECTIVO">Efectivo</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Monto (₡)</label>
+              <input type="number" step="0.01" id="txtMonto" class="form-control" placeholder="0.00" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">N° Comprobante / Ref</label>
+              <input type="text" id="txtRef" class="form-control" placeholder="Ej: 12345678">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Descripción / Detalle</label>
+              <input type="text" id="txtDetalle" class="form-control" placeholder="Ej: Cuota mensual Juan Pérez">
+            </div>
+          </div>
+          <button type="submit" id="btnGuardar" class="btn btn-success mt-3 w-100 fw-bold">Guardar En Base de Datos</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Historial de Transacciones -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Historial de Movimientos</strong>
+        <button class="btn btn-sm btn-outline-secondary" onclick="cargarTransacciones()">🔄 Actualizar</button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Medio</th>
+                <th>Monto</th>
+                <th>Comprobante</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="tblCuerpo"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

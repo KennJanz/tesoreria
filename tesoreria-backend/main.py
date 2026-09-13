@@ -5,7 +5,8 @@ import urllib.parse
 import psycopg2
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,8 +24,8 @@ app.add_middleware(
 DATABASE_URL = os.getenv("DATABASE_URL")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# Inicializa el cliente oficial de Gemini (detecta GEMINI_API_KEY del entorno automáticamente si no se le pasa explícitamente)
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
 
 def get_db_connection():
     if not DATABASE_URL:
@@ -71,7 +72,6 @@ def obtener_transacciones():
 async def escanear_sinpe(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-        model = genai.GenerativeModel('gemini-1.5-flash')
         
         prompt = """
         Analiza esta captura de pantalla de un comprobante de pago (SINPE Móvil / Transferencia).
@@ -84,8 +84,17 @@ async def escanear_sinpe(file: UploadFile = File(...)):
         NO agregues etiquetas markdown ni texto explicativo. Responde exclusivamente con el JSON.
         """
         
-        image_part = {"mime_type": file.content_type, "data": contents}
-        response = model.generate_content([prompt, image_part])
+        # En el nuevo SDK, las imágenes en bytes se pasan envolviéndolas en types.Part.from_bytes
+        image_part = types.Part.from_bytes(
+            data=contents,
+            mime_type=file.content_type or "image/jpeg"
+        )
+        
+        # Uso del nuevo cliente y modelo recomendado gemini-2.5-flash
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[image_part, prompt]
+        )
         
         raw_text = re.sub(r'```json\s*|\s*```', '', response.text).strip()
         datos = json.loads(raw_text)

@@ -88,7 +88,7 @@ async def escanear_sinpe(file: UploadFile = File(...)):
         )
         
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-3.6-flash',
             contents=[image_part, prompt]
         )
         
